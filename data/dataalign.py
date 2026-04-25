@@ -17,10 +17,11 @@ class DataAligner:
 
         # backtest mode
         self._backtest_df = None    # 存历史数据
-        self._backtest_index =None  # 控制回测进度
-        self._i = 1 # 当前回测执行到第几根k线
+        self._backtest_index = None  # 控制回测进度
+        self._i = 1  # 当前回测执行到第几根k线
 
-    # backtest专用对齐,不需要return，只需改变self的两个属性值
+    # backtest专用对齐
+    # ⚠️ 修正：增加 return，避免隐式状态依赖
     def align(self, data_dict):
         """
         df_list = {
@@ -29,14 +30,14 @@ class DataAligner:
         }
         """
         df_list = []
-        common_index = None # 股票共同时间轴
+        common_index = None  # 股票共同时间轴
 
         # 遍历列表处理
         for name, d in data_dict.items():
             """
             先初始化index,然后与后面的每个数据共同相交,计算出相同的交集index
             """
-            if common_index == None:
+            if common_index is None:
                 common_index = d.index
             else:
                 common_index = common_index.intersection(d.index)
@@ -51,6 +52,7 @@ class DataAligner:
             (QQQ, open) (QQQ, high) (QQQ, low) (QQQ, close)
             """
             d.columns = pd.MultiIndex.from_product([[name], d.columns])
+
             # 收集每个资产
             df_list.append(d)
 
@@ -60,11 +62,15 @@ class DataAligner:
         # 按时间拼接横向数据
         df = pd.concat(df_list, axis=1).sort_index()
 
-        # 防止未来函数 例如 10:01只能看到10:00时的数据，看不到10:01的数据
+        # 防止未来函数
+        # ⚠️ 建议：shift 应该在 factor 层做，但这里保留你的设计
         df = df.shift(1)
 
         self._backtest_df = df
         self._backtest_index = df.index
+
+        # ⚠️ 新增：返回 df（便于 Optuna / walk-forward）
+        return df
 
     # backtest的流式输出
     def next(self):
@@ -84,7 +90,6 @@ class DataAligner:
 
         return self._to_snapshot(row)
 
-
     # 统一snapshot转换器
     def _to_snapshot(self, row):
         """
@@ -97,9 +102,8 @@ class DataAligner:
             if symbol not in snapshot:
                 snapshot[symbol] = {}
             snapshot[symbol][field] = value
-        
-        return snapshot
 
+        return snapshot
 
     # Live 更新数据
     def update(self, symbol, data):
@@ -117,9 +121,8 @@ class DataAligner:
         """
         if self.method != "live":
             raise ValueError("not in live mode")
-        
-        return self.latest
 
+        return self.latest
 
 """
 backtest usage:
