@@ -12,7 +12,12 @@ class Signal:
             pd.series (signal)
                 +1 long
                 0   netural
-                -1 short
+                -1 shorta
+
+                    rsi   macd
+        t1           -1     0
+        t2            0     1
+        t3            1    -1
         """
         raise NotImplementedError
     

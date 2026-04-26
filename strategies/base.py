@@ -3,10 +3,12 @@ class Strategies:
     def __init__(self, name=None):
         self.name = name
 
-    def generate(self, signals):
+    def generate(self, df):
         """
-        input
-            signals: dict[str, pd.series]
+        这个系统输出：
+        t1: 1.0 满仓
+        t2: 0.5 减半仓
+        t3: -1  清仓
 
         output
             pd.series
