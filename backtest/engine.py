@@ -15,14 +15,22 @@ class BacktestEngine:
         self.equity = initial_capital
         self.positions = {}
         self.equity_curve = []
-        
+    
+    # context builder
     def _build_context(self, pnl, returns, prices):
         return{
-            "equity": self.equity,
-            "pnl": pnl,
-            "returns": returns,
-            "prices": prices,
-            "position": self.positions
+            "equity": self.equity,  # 资产
+            "pnl": pnl,             # 账户盈亏金额 profit and loss
+            "returns": returns,     # 收益率
+            "prices": prices,       # 价格--资产的市场报价
+            "position": self.positions  # 头寸和持仓
         }
     
+    # execution simulation
+    def _execution(self, prices, target_weights):
+        pnl = 0 
+
+        new_positions = {}
+
+        
 
